@@ -1,0 +1,6 @@
+{
+  "name": "ASHA EMR",
+  "description": "An offline-first clinical EMR for Community Health Workers (ASHA) in India. Manages Pregnancy/ANC tracking, Child Immunizations, NCD Screenings, and features a Gemini-backed symptom triage utility.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
