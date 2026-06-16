@@ -68,7 +68,7 @@ object AshaTranslations {
         "immunize" to mapOf(
             "EN" to "Immunize",
             "BN" to "শিশু প্রতিষেধক",
-            "HI" to "شिशु टीकाकरण"
+            "HI" to "शिशु टीकाकरण"
         ),
         "ncd" to mapOf(
             "EN" to "NCD Stats",
@@ -523,7 +523,7 @@ fun BentoGridDashboard(
                         lineHeight = 15.sp
                     )
                     Text(
-                        text = if (lang == "BN") "১৪টি এএনসি পরীক্ষা বাকি" else if (lang == "HI") "१४ जांच लंबित" else "14 ANC due this week",
+                        text = if (lang == "BN") "${pregnantCount}টি এএনসি পরীক্ষা বাকি" else if (lang == "HI") "${pregnantCount} जांच लंबित" else "${pregnantCount} ANC due this week",
                         fontSize = 11.sp,
                         color = Color(0xFF524441),
                         fontWeight = FontWeight.Medium
@@ -941,8 +941,8 @@ fun MaternalAncTab(viewModel: EMRViewModel, onPatientClicked: (Int) -> Unit) {
                         ) {
                             Column {
                                 Text(m.name, fontWeight = FontWeight.Bold, fontSize = 16.sp)
-                                Text("Village: ${m.village} • Age: ${m.age}", fontSize = 12.sp)
-                                Text("Aadhaar: ${m.aadhaar}", fontSize = 11.sp, color = Color.Gray)
+                                Text("Village: ${m.addressVillage} • Age: ${m.age}", fontSize = 12.sp)
+                                Text("Aadhaar: ${m.identifierAadhaar}", fontSize = 11.sp, color = Color.Gray)
                             }
                             Box(
                                 modifier = Modifier
@@ -1009,8 +1009,8 @@ fun ChildImmunizationTab(viewModel: EMRViewModel, onPatientClicked: (Int) -> Uni
                         ) {
                             Column {
                                 Text(c.name, fontWeight = FontWeight.Bold, fontSize = 16.sp)
-                                Text("Guardian: ${c.guardianName}", fontSize = 12.sp)
-                                Text("Village: ${c.village} • Age: ${c.age} Yrs", fontSize = 12.sp)
+                                Text("Guardian: ${c.contactGuardianName}", fontSize = 12.sp)
+                                Text("Village: ${c.addressVillage} • Age: ${c.age} Yrs", fontSize = 12.sp)
                             }
                             Box(
                                 modifier = Modifier
@@ -1079,8 +1079,8 @@ fun NcdAdultTab(viewModel: EMRViewModel, onPatientClicked: (Int) -> Unit) {
                         ) {
                             Column {
                                 Text(adult.name, fontWeight = FontWeight.Bold, fontSize = 16.sp)
-                                Text("Village: ${adult.village} • Age: ${adult.age}", fontSize = 12.sp)
-                                Text("Phone: ${adult.phone}", fontSize = 12.sp)
+                                Text("Village: ${adult.addressVillage} • Age: ${adult.age}", fontSize = 12.sp)
+                                Text("Phone: ${adult.telecomPhone}", fontSize = 12.sp)
                             }
                             Box(
                                 modifier = Modifier
@@ -1199,14 +1199,14 @@ fun PatientRowItem(patient: PatientEntity, onPatientClicked: (Int) -> Unit) {
                 }
                 Spacer(modifier = Modifier.height(3.dp))
                 Text(
-                    text = "${if (lang == "BN") "বয়স" else if (lang == "HI") "उम्र" else "Age"}: ${patient.age} • ${if (lang == "BN") "গ্রাম" else if (lang == "HI") "गाँव" else "Village"}: ${patient.village}",
+                    text = "${if (lang == "BN") "বয়স" else if (lang == "HI") "उम्र" else "Age"}: ${patient.age} • ${if (lang == "BN") "গ্রাম" else if (lang == "HI") "गाँव" else "Village"}: ${patient.addressVillage}",
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Medium,
                     color = Color(0xFF524441)
                 )
-                if (patient.aadhaar.isNotEmpty()) {
+                if (patient.identifierAadhaar.isNotEmpty()) {
                     Text(
-                        text = "${if (lang == "BN") "আধার" else if (lang == "HI") "आधार" else "Aadhaar"}: ${patient.aadhaar}",
+                        text = "${if (lang == "BN") "আধার" else if (lang == "HI") "आधार" else "Aadhaar"}: ${patient.identifierAadhaar}",
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Normal,
                         color = Color.Gray
@@ -1240,6 +1240,7 @@ fun RegisterPatientScreen(
     var village by remember { mutableStateOf(viewModel.pFormVillage) }
     var phone by remember { mutableStateOf(viewModel.pFormPhone) }
     var aadhaar by remember { mutableStateOf(viewModel.pFormAadhaar) }
+    var abhaId by remember { mutableStateOf(viewModel.pFormAbhaId) }
     var guardian by remember { mutableStateOf(viewModel.pFormGuardianName) }
     var pregnant by remember { mutableStateOf(viewModel.pFormIsPregnant) }
     var child by remember { mutableStateOf(viewModel.pFormIsChild) }
@@ -1323,6 +1324,17 @@ fun RegisterPatientScreen(
             value = guardian,
             onValueChange = { guardian = it; viewModel.pFormGuardianName = it },
             label = { Text("Guardian / Husband's Name") },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 8.dp),
+            singleLine = true
+        )
+
+        OutlinedTextField(
+            value = abhaId,
+            onValueChange = { abhaId = it; viewModel.pFormAbhaId = it },
+            label = { Text("14-Digit ABHA Health ID") },
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(vertical = 8.dp),
@@ -1524,7 +1536,7 @@ fun PatientDetailsScreen(
                                 color = Color.Gray
                             )
                             Text(
-                                text = patient.village,
+                                text = patient.addressVillage,
                                 fontSize = 13.sp,
                                 fontWeight = FontWeight.Black,
                                 color = Color(0xFF1D1B1E)
@@ -1556,7 +1568,7 @@ fun PatientDetailsScreen(
 
                     Spacer(modifier = Modifier.height(8.dp))
 
-                    if (patient.guardianName.isNotEmpty()) {
+                    if (patient.contactGuardianName.isNotEmpty()) {
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -1573,7 +1585,7 @@ fun PatientDetailsScreen(
                                 color = Color.Gray
                             )
                             Text(
-                                text = patient.guardianName,
+                                text = patient.contactGuardianName,
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.ExtraBold,
                                 color = Color(0xFF1D1B1E)
@@ -1582,7 +1594,7 @@ fun PatientDetailsScreen(
                         Spacer(modifier = Modifier.height(6.dp))
                     }
 
-                    if (patient.aadhaar.isNotEmpty()) {
+                    if (patient.identifierAadhaar.isNotEmpty()) {
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -1599,7 +1611,33 @@ fun PatientDetailsScreen(
                                 color = Color.Gray
                             )
                             Text(
-                                text = patient.aadhaar,
+                                text = patient.identifierAadhaar,
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.ExtraBold,
+                                color = Color(0xFF1D1B1E)
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(6.dp))
+                    }
+
+                    if (patient.identifierAbha.isNotEmpty()) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(12.dp))
+                                .background(Color.White)
+                                .border(1.dp, Color(0xFFE6E0E9), RoundedCornerShape(12.dp))
+                                .padding(10.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = if (lang == "BN") "এবিএইচএ আইডি: " else if (lang == "HI") "एबीएचए আইডি: " else "ABHA Health ID: ",
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color.Gray
+                            )
+                            Text(
+                                text = patient.identifierAbha,
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.ExtraBold,
                                 color = Color(0xFF1D1B1E)
@@ -1642,7 +1680,7 @@ fun PatientDetailsScreen(
                                     .padding(10.dp)
                             ) {
                                 Column {
-                                    Text("Latest ANC Checkup Done: ${latest.checkupDate}", fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                                    Text("Latest ANC Checkup Done: ${latest.periodStart}", fontWeight = FontWeight.Bold, fontSize = 13.sp)
                                     Text("Expected Delivery (EDD): ${latest.eddDate}", color = ColorHighRisk, fontWeight = FontWeight.Bold, fontSize = 13.sp)
                                     Text("Weight: ${latest.weightKg} Kg • BP: ${latest.systolicBp}/${latest.diastolicBp} mmHg", fontSize = 12.sp)
                                     Text("Hemoglobin: ${latest.hemoglobinLevel} g/dL", fontSize = 12.sp)
@@ -1739,12 +1777,12 @@ fun PatientDetailsScreen(
                                 .padding(10.dp)
                         ) {
                             Column {
-                                Text("Last Screening Date: ${lat.screeningDate}", fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                                Text("Last Screening Date: ${lat.effectiveDateTime}", fontWeight = FontWeight.Bold, fontSize = 12.sp)
                                 Text("BP Metric: ${lat.systolicBp}/${lat.diastolicBp} mmHg", fontSize = 12.sp)
-                                Text("Blood Sugar (Random): ${lat.bloodSugarMgDl} mg/dL", fontSize = 12.sp)
-                                Text("Tobacco Consumer: ${if (lat.tobaccoUser) "Yes" else "No"}", fontSize = 12.sp)
-                                if (lat.referralDestination != "None") {
-                                    Text("Referral Advice: ${lat.referralDestination}", color = ColorHighRisk, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                                Text("Blood Sugar (Random): ${lat.bloodGlucose} mg/dL", fontSize = 12.sp)
+                                Text("Tobacco Consumer: ${if (lat.tobaccoStatus) "Yes" else "No"}", fontSize = 12.sp)
+                                if (lat.referralRequest != "None") {
+                                    Text("Referral Advice: ${lat.referralRequest}", color = ColorHighRisk, fontWeight = FontWeight.Bold, fontSize = 12.sp)
                                 }
                             }
                         }
@@ -1796,32 +1834,32 @@ fun PatientDetailsScreen(
                                         modifier = Modifier.fillMaxWidth(),
                                         horizontalArrangement = Arrangement.SpaceBetween
                                     ) {
-                                        Text("Encounter Date: ${log.consultationDate}", fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                                        Text("Encounter Date: ${log.encounterDate}", fontWeight = FontWeight.Bold, fontSize = 12.sp)
                                         Box(
                                             modifier = Modifier
                                                 .clip(RoundedCornerShape(4.dp))
                                                 .background(
-                                                    if (log.severity == "Severe") ColorHighRisk.copy(alpha = 0.15f)
-                                                    else if (log.severity == "Moderate") ColorWarning.copy(alpha = 0.15f)
+                                                    if (log.priority == "Severe") ColorHighRisk.copy(alpha = 0.15f)
+                                                    else if (log.priority == "Moderate") ColorWarning.copy(alpha = 0.15f)
                                                     else ColorNormal.copy(alpha = 0.15f)
                                                 )
                                                 .padding(horizontal = 6.dp, vertical = 2.dp)
                                         ) {
                                             Text(
-                                                log.severity,
+                                                log.priority,
                                                 fontSize = 9.sp,
                                                 fontWeight = FontWeight.Bold,
-                                                color = if (log.severity == "Severe") ColorHighRisk else if (log.severity == "Moderate") ColorWarning else ColorNormal
+                                                color = if (log.priority == "Severe") ColorHighRisk else if (log.priority == "Moderate") ColorWarning else ColorNormal
                                             )
                                         }
                                     }
                                     Spacer(modifier = Modifier.height(4.dp))
-                                    Text("Symptoms: ${log.symptoms} (${log.durationDays} days)", fontSize = 12.sp)
-                                    Text("Temp: ${log.temperatureFahrenheit}°F", fontSize = 12.sp)
-                                    if (log.ashaNotes.isNotEmpty()) {
-                                        Text("ASHA Companion Notes: ${log.ashaNotes}", fontSize = 12.sp, color = Color.DarkGray)
+                                    Text("Symptoms: ${log.presentingSymptoms} (${log.symptomDuration} days)", fontSize = 12.sp)
+                                    Text("Temp: ${log.bodyTemperature}°F", fontSize = 12.sp)
+                                    if (log.fieldNotes.isNotEmpty()) {
+                                        Text("ASHA Companion Notes: ${log.fieldNotes}", fontSize = 12.sp, color = Color.DarkGray)
                                     }
-                                    if (log.aiTriageAdvice.isNotEmpty()) {
+                                    if (log.aiClinicalImpression.isNotEmpty()) {
                                         Spacer(modifier = Modifier.height(6.dp))
                                         Divider(color = Color.LightGray.copy(alpha = 0.5f))
                                         Spacer(modifier = Modifier.height(4.dp))
@@ -1833,7 +1871,7 @@ fun PatientDetailsScreen(
                                                 modifier = Modifier.size(16.dp).padding(top = 2.dp)
                                             )
                                             Spacer(modifier = Modifier.width(6.dp))
-                                            Text(log.aiTriageAdvice, fontSize = 11.sp, color = MaterialTheme.colorScheme.primary)
+                                            Text(log.aiClinicalImpression, fontSize = 11.sp, color = MaterialTheme.colorScheme.primary)
                                         }
                                     }
                                 }
