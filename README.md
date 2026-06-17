@@ -57,18 +57,35 @@ Throughout simulated evaluations, the app demonstrated outstanding performance p
 ## Conclusion
 The ASHA Clinical EMR successfully proves that modern mobile frameworks combined with offline-first design models can solve complex field-level communication and data friction challenges in public health. By equipping the grassroot health forces of West Bengal with standardized diagnostic-support structures, high contrast interfaces, and automated calculations, the application lays down a vital stepping stone for an integrated, responsive, and digital-first public health ecosystem.
 
-## Mode of improvement
+## Mode of improvement (Version 2.0 Roadmap)
 Future versions of the application are planned to incorporate several core systemic upgrades:
-1. Unified National Health Integration: Implementation of direct API bridges to register beneficiaries directly into the national Ayushman Bharat Health Account (ABHA) index.
-2. Localized Voice-to-Text Model Engines: Offline-native speech processing models to process spoken regional dialects of remote villages into clean, standardized medical records without cloud data dependencies.
-3. Automated WhatsApp/SMS Gateway: Direct SMS integration alerting mothers of upcoming primary immunization slots in their corresponding regional dialect automatically.
-4. Integrated Bluetooth Hardware: Direct connection to portable digital weighing scales and blood pressure monitors to eliminate direct manual key-in errors entirely.
+
+### 1. Offline-First Progressive Web App & Advanced Sync
+*   **Service Workers & Background Sync:** Implementing robust background synchronization to handle low-connectivity environments seamlessly.
+*   **IndexedDB/SQLite Integration:** Migrating towards a unified PWA architecture for cross-platform availability.
+*   **Conflict Resolution:** Sophisticated algorithms to resolve data conflicts during multi-device synchronization.
+
+### 2. FHIR R4 & ABDM Compliance
+*   **FHIR Standardized Schema:** Transitioning all clinical data models to HL7 FHIR R4 resources (Patient, Observation, Encounter, Immunization).
+*   **ABHA Integration:** Full integration with the Ayushman Bharat Digital Mission (ABDM) for unified health IDs and consent management.
+
+### 3. Geospatial & GIS Module
+*   **Household Geotagging:** GPS-based mapping of beneficiary households.
+*   **Disease Hotspot Mapping:** Visualizing coverage gaps and disease clusters using Leaflet and PostGIS.
+
+### 4. Advanced AI & Multilingual Voice Interface
+*   **Risk Prediction Models:** Predictive analytics for high-risk pregnancies and child malnutrition.
+*   **Voice-First Interaction:** Multilingual (Bengali/Hindi) voice assistant for speech-to-text form filling and clinical navigation.
+
+### 5. Privacy, Security & Security
+*   **AES256 Encryption:** Field-level encryption for all sensitive health data.
+*   **Role-Based Access Control (RBAC):** JWT-based authentication for ASHAs, ANMs, and Medical Officers.
 
 ## Apk Link
 The compiled, ready-to-install Android package (APK) is generated and stored directly in the following repository paths:
 
 1. Official Release Path (Pre-Built/Released):
-/releases/asha-clinical-emr-v1.0.apk
+/releases/asha-clinical-emr-v1.1.apk
 
 2. Local Debug Compilation Path:
 /app/build/outputs/apk/debug/app-debug.apk
@@ -81,7 +98,7 @@ To install this file on your physical Android terminal, you can clone or downloa
 1. Start the application. The system will initialize your workspace with Susmita Banerjee set as your active regional sub-center representative.
 2. The homepage displays the status dashboard. Tap on any of the core bento cards to access corresponding clinical registers: the maternal list, childbirth registrations, or universal immunizations.
 3. To find a specific clinical profile, type the name or Aadhaar identifier in the upper search bar. Tap on the microphone icon to execute a mock voice-search search matches.
-4. To enroll a new patient, select the add person button, fill in key metrics, and save.
+4. To enroll a new patient, select the add person button, fill in key metrics including the 14-digit ABHA ID, and save.
 5. In the Child Immunization Screen, use the dynamic slider controls to enter the weight and height of the infant. The system will instantly highlight the corresponding WHO growth status color banner. Select the corresponding immunization checkmarks to log active completed doses.
 6. In the Consultation screen, input clinical symptoms. Tap the primary AI clinical advice option to call the Gemini API and render instant clinical recommendations and referral guidelines. Toggle language settings instantly at the top top app bar in standard Bengali, English, or Hindi.
 
@@ -92,12 +109,8 @@ To install this file on your physical Android terminal, you can clone or downloa
 
 ৩. নির্দিষ্ট কোনো রোগীকে খোঁজার জন্য উপরের অনুসন্ধান বারে নাম, গ্রাম বা আধার নম্বর লিখে খুঁজুন। টাইপিং ট্রাবল এড়াতে ক্লিক করুন মাইক্রোফোন চিহ্নে এবং কন্ঠস্বরের বিবরণ দিয়ে রোগীকে খুঁজুন।
 
-৪. নতুন কোনো রোগীকে তালিকায় যুক্ত করতে ডানদিকের নতুন রোগী যোগ করার চিহ্নে ক্লিক করুন, প্রয়োজনীয় তথ্যসমূহ প্রদান করুন এবং সংরক্ষণ করুন।
+৪. নতুন কোনো রোগীকে তালিকায় যুক্ত করতে ডানদিকের নতুন রোগী যোগ করার চিহ্নে ক্লিক করুন, ১৪ ডিজিটের এবিএইচএ (ABHA) আইডি সহ প্রয়োজনীয় তথ্যসমূহ প্রদান করুন এবং সংরক্ষণ করুন।
 
 ৫. শিশুর টিকাকরণ স্ক্রিনে গিয়ে স্লাইডার ব্যবহার করে শিশুর ওজন ও উচ্চতা সেট করুন। বিশ্ব স্বাস্থ্য সংস্থার নিয়ম অনুযায়ী শিশুর পুষ্টির স্থিতি তৎক্ষণাৎ সবুজ, হলুদ অথবা লাল রঙের ব্যানারে প্রদর্শিত হবে। নিচে থাকা বিভিন্ন ভ্যাকসিনের চেকবক্স ক্লিক করে সম্পন্ন হওয়া টিকাকরণসমূহ সংরক্ষণ করুন।
 
 ৬. পরামর্শ স্ক্রিনে গিয়ে রোগীর বর্তমান লক্ষণসমূহ নথিভুক্ত করুন। এআই পরামর্শ বোতামটিতে ক্লিক করার মাধ্যমে জেমিনি এআই থেকে তাৎক্ষণিক ক্লিনিকাল নির্দেশাবলী এবং রেফার করার দরকার আছে কিনা তা জেনে নিন। প্রয়োজনে স্ক্রিনের উপরে ভাষা পরিবর্তন করার টগল বোতামগুলি ব্যবহার করে বাংলা, ইংরেজি ও হিন্দির মধ্যে পরিবর্তন করুন।
-
-৪. নতুন কারো খাতা খুলতে হলে ডান ধারের মানুষছবির বোতামে চাপ দিয়ে তার সব সাকিন আর সতি বিবরণ দিয়ে ডালা ভরুন এবং তুলে রাখুন।
-৫. বাচ্চার টিকার ঘরে গিয়ে স্লাইডার টেনে তড়িৎ বাচ্চার ওজন আর লম্বা মাপ ঠিক করুন। বাচ্ছা পুষ্টি পেয়েছে না কি জীর্ণ শুকনা লাল তা সাথে সাথে বিশ্ব স্বাস্থ্য সংস্থার নিয়ম মেনে ব্যানার সেজে গুজে রঙ দেখিয়ে দেবে। এরপর নেওয়া টিকার ঘরে দাগ দিয়ে দস্তখত করুন।
-৬. তদারকি ঘরে গিয়ে রোগীর কি কি ব্যারাম বা জ্বর-জ্বালা হয়েছে তা লিখুন। তারপর এআই পরামর্শ বোতামে চাপ দিন। নদী পেরিয়ে ডাক্তারবাবু আসার আগেই জেমিনি এআই বাঘের মতো গর্জন দিয়ে বাতলে দেবে রোগীকে কি জল বা ওষুধ খাওয়াতে হবে আর শিগগির হাসপাতালে দিতে হবে কি না। ওপরের টগল টিপে নিজের পছন্দসই ভাষায় সব বদলে নিতে পারেন।
