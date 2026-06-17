@@ -56,9 +56,9 @@ class EMRViewModel(private val repository: EMRRepository) : ViewModel() {
         } else {
             list.filter {
                 it.name.contains(query, ignoreCase = true) ||
-                        it.village.contains(query, ignoreCase = true) ||
-                        it.aadhaar.contains(query) ||
-                        it.phone.contains(query)
+                        it.addressVillage.contains(query, ignoreCase = true) ||
+                        it.identifierAadhaar.contains(query) ||
+                        it.telecomPhone.contains(query)
             }
         }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
@@ -119,6 +119,7 @@ class EMRViewModel(private val repository: EMRRepository) : ViewModel() {
     var pFormVillage = ""
     var pFormPhone = ""
     var pFormAadhaar = ""
+    var pFormAbhaId = ""
     var pFormGuardianName = ""
     var pFormIsPregnant = false
     var pFormIsChild = false
@@ -130,6 +131,7 @@ class EMRViewModel(private val repository: EMRRepository) : ViewModel() {
         pFormVillage = ""
         pFormPhone = ""
         pFormAadhaar = ""
+        pFormAbhaId = ""
         pFormGuardianName = ""
         pFormIsPregnant = false
         pFormIsChild = false
@@ -141,10 +143,11 @@ class EMRViewModel(private val repository: EMRRepository) : ViewModel() {
             name = pFormName.trim().ifEmpty { "Unnamed Patient" },
             age = parsedAge,
             gender = pFormGender,
-            village = pFormVillage.trim().ifEmpty { "General Village" },
-            phone = pFormPhone.trim(),
-            aadhaar = pFormAadhaar.trim(),
-            guardianName = pFormGuardianName.trim(),
+            addressVillage = pFormVillage.trim().ifEmpty { "General Village" },
+            telecomPhone = pFormPhone.trim(),
+            identifierAadhaar = pFormAadhaar.trim(),
+            identifierAbha = pFormAbhaId.trim(),
+            contactGuardianName = pFormGuardianName.trim(),
             isPregnant = pFormIsPregnant,
             isChild = pFormIsChild
         )
@@ -216,18 +219,18 @@ class EMRViewModel(private val repository: EMRRepository) : ViewModel() {
         val riskStr = if (highRisks.isEmpty()) "None" else highRisks.joinToString(", ")
 
         val entity = AncCheckupEntity(
-            patientId = patientId,
-            checkupDate = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date()),
+            subjectPatientId = patientId,
+            periodStart = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date()),
             lmpDate = parsedLmp,
             eddDate = eddStr,
             weightKg = ancWeightKg.toFloatOrNull() ?: 55.0f,
             systolicBp = systolic,
             diastolicBp = diastolic,
             hemoglobinLevel = hb,
-            ironFolicAcidSupplements = ancIfaSupplements,
+            ifaSupplements = ancIfaSupplements,
             tetanusDose = ancTetanusDose,
             highRiskFactors = riskStr,
-            notes = ancNotes.trim()
+            clinicalNotes = ancNotes.trim()
         )
 
         viewModelScope.launch {
@@ -349,14 +352,14 @@ class EMRViewModel(private val repository: EMRRepository) : ViewModel() {
         }
 
         val entity = NcdScreeningEntity(
-            patientId = patientId,
-            screeningDate = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date()),
+            subjectPatientId = patientId,
+            effectiveDateTime = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date()),
             systolicBp = sys,
             diastolicBp = dia,
-            bloodSugarMgDl = sugar,
-            tobaccoUser = ncdTobacco,
-            symptoms = ncdSymptoms.trim().ifEmpty { "None" },
-            referralDestination = autoReferral
+            bloodGlucose = sugar,
+            tobaccoStatus = ncdTobacco,
+            symptomsPresent = ncdSymptoms.trim().ifEmpty { "None" },
+            referralRequest = autoReferral
         )
 
         viewModelScope.launch {
@@ -416,15 +419,15 @@ class EMRViewModel(private val repository: EMRRepository) : ViewModel() {
 
     fun submitConsultLog(patientId: Int, onSuccess: () -> Unit) {
         val entity = ConsultLogEntity(
-            patientId = patientId,
-            consultationDate = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date()),
-            symptoms = conSymptoms.trim().ifEmpty { "None Given" },
-            severity = conSeverity,
-            durationDays = conDuration.toIntOrNull() ?: 1,
-            temperatureFahrenheit = conTemp.toFloatOrNull() ?: 98.6f,
-            ashaNotes = conNotes.trim(),
-            aiTriageAdvice = aiTriageResult.value ?: "No AI consultation completed.",
-            referredToDoctor = conReferred
+            subjectPatientId = patientId,
+            encounterDate = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date()),
+            presentingSymptoms = conSymptoms.trim().ifEmpty { "None Given" },
+            priority = conSeverity,
+            symptomDuration = conDuration.toIntOrNull() ?: 1,
+            bodyTemperature = conTemp.toFloatOrNull() ?: 98.6f,
+            fieldNotes = conNotes.trim(),
+            aiClinicalImpression = aiTriageResult.value ?: "No AI consultation completed.",
+            referralStatus = conReferred
         )
 
         viewModelScope.launch {

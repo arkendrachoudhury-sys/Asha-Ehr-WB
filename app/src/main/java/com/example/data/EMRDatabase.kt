@@ -7,36 +7,44 @@ import kotlinx.coroutines.flow.Flow
 // ROOM ENTITIES
 // ==========================================
 
+/**
+ * Aligned with HL7 FHIR R4 Patient Resource
+ */
 @Entity(tableName = "patients")
 data class PatientEntity(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
-    val name: String,
-    val age: Int,
-    val gender: String, // "Female", "Male", "Other"
-    val village: String,
-    val phone: String,
-    val aadhaar: String,
-    val guardianName: String,
-    val isPregnant: Boolean = false,
-    val isChild: Boolean = false,
+    val identifierAadhaar: String, // FHIR Identifier
+    val identifierAbha: String = "", // FHIR Identifier (ABHA)
+    val name: String, // FHIR HumanName
+    val telecomPhone: String, // FHIR ContactPoint
+    val gender: String, // FHIR AdministrativeGender: "female", "male", "other", "unknown"
+    val birthDate: String = "", // FHIR date
+    val age: Int, // Calculated/Legacy field
+    val addressVillage: String, // FHIR Address
+    val contactGuardianName: String, // FHIR Patient.contact
+    val isPregnant: Boolean = false, // Extension/Observation context
+    val isChild: Boolean = false, // Patient group context
     val createdTimestamp: Long = System.currentTimeMillis()
 )
 
+/**
+ * Aligned with HL7 FHIR R4 Encounter and Observation Resources
+ */
 @Entity(tableName = "anc_checkups")
 data class AncCheckupEntity(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
-    val patientId: Int, // Foreign Key linking to PatientEntity.id
-    val checkupDate: String,
-    val lmpDate: String, // Last Menstrual Period
-    val eddDate: String, // Expected Delivery Date
-    val weightKg: Float,
-    val systolicBp: Int,
-    val diastolicBp: Int,
-    val hemoglobinLevel: Float, // g/dL
-    val ironFolicAcidSupplements: Boolean,
-    val tetanusDose: String, // "None", "Dose 1", "Dose 2", "Booster"
-    val highRiskFactors: String, // e.g., "Severe Anemia", "Hypertension", "None"
-    val notes: String = ""
+    val subjectPatientId: Int, // FHIR subject (Patient reference)
+    val periodStart: String, // FHIR Encounter.period.start (checkupDate)
+    val lmpDate: String, // Observation: Last Menstrual Period
+    val eddDate: String, // Observation: Expected Date of Delivery
+    val weightKg: Float, // Observation: Body Weight
+    val systolicBp: Int, // Observation: Systolic BP
+    val diastolicBp: Int, // Observation: Diastolic BP
+    val hemoglobinLevel: Float, // Observation: Hemoglobin [Mass/volume] in Blood
+    val ifaSupplements: Boolean, // MedicationStatement or Extension
+    val tetanusDose: String, // FHIR Immunization
+    val highRiskFactors: String, // Observation.interpretation or Condition
+    val clinicalNotes: String = "" // FHIR Annotation
 )
 
 @Entity(tableName = "child_vaccinations")
@@ -58,31 +66,37 @@ data class ChildVaccinationEntity(
     val growthStatus: String = "Normal" // "Normal", "Moderate Malnutrition (MAM)", "Severe Malnutrition (SAM)"
 )
 
+/**
+ * Aligned with HL7 FHIR R4 Observation and ServiceRequest
+ */
 @Entity(tableName = "ncd_screenings")
 data class NcdScreeningEntity(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
-    val patientId: Int, // Links to PatientEntity
-    val screeningDate: String,
-    val systolicBp: Int,
-    val diastolicBp: Int,
-    val bloodSugarMgDl: Int,
-    val tobaccoUser: Boolean,
-    val symptoms: String, // e.g., "Frequent Urination", "Dizziness", "None"
-    val referralDestination: String = "" // e.g., "None", "PHC Primary Health Centre", "District Hospital"
+    val subjectPatientId: Int, // FHIR subject
+    val effectiveDateTime: String, // FHIR Observation.effectiveDateTime (screeningDate)
+    val systolicBp: Int, // Observation: BP
+    val diastolicBp: Int, // Observation: BP
+    val bloodGlucose: Int, // Observation: Blood Glucose
+    val tobaccoStatus: Boolean, // Observation: Smoking Status
+    val symptomsPresent: String, // FHIR Condition/Observation
+    val referralRequest: String = "" // FHIR ServiceRequest.performer (referralDestination)
 )
 
+/**
+ * Aligned with HL7 FHIR R4 Encounter, Observation and ClinicalImpression
+ */
 @Entity(tableName = "consult_logs")
 data class ConsultLogEntity(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
-    val patientId: Int,
-    val consultationDate: String,
-    val symptoms: String,
-    val severity: String, // "Mild", "Moderate", "Severe"
-    val durationDays: Int,
-    val temperatureFahrenheit: Float,
-    val ashaNotes: String,
-    val aiTriageAdvice: String, // AI consultation summary or guidelines fallback
-    val referredToDoctor: Boolean = false
+    val subjectPatientId: Int, // FHIR subject
+    val encounterDate: String, // FHIR Encounter.period.start
+    val presentingSymptoms: String, // FHIR Condition.code (text)
+    val priority: String, // FHIR Encounter.priority (severity)
+    val symptomDuration: Int, // Extension on Condition
+    val bodyTemperature: Float, // FHIR Observation: Body Temperature
+    val fieldNotes: String, // FHIR Annotation
+    val aiClinicalImpression: String, // FHIR ClinicalImpression
+    val referralStatus: Boolean = false // FHIR ServiceRequest
 )
 
 // ==========================================
@@ -115,10 +129,10 @@ interface EMRDao {
     suspend fun deletePatientById(id: Int)
 
     // --- ANC Operations ---
-    @Query("SELECT * FROM anc_checkups WHERE patientId = :patientId ORDER BY checkupDate DESC")
+    @Query("SELECT * FROM anc_checkups WHERE subjectPatientId = :patientId ORDER BY periodStart DESC")
     fun getAncCheckupsForPatientFlow(patientId: Int): Flow<List<AncCheckupEntity>>
 
-    @Query("SELECT * FROM anc_checkups ORDER BY checkupDate DESC")
+    @Query("SELECT * FROM anc_checkups ORDER BY periodStart DESC")
     fun getAllAncCheckupsFlow(): Flow<List<AncCheckupEntity>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
@@ -135,17 +149,17 @@ interface EMRDao {
     suspend fun insertOrUpdateChildRecord(vaccination: ChildVaccinationEntity)
 
     // --- NCD Operations ---
-    @Query("SELECT * FROM ncd_screenings WHERE patientId = :patientId ORDER BY screeningDate DESC")
+    @Query("SELECT * FROM ncd_screenings WHERE subjectPatientId = :patientId ORDER BY effectiveDateTime DESC")
     fun getNcdScreeningsForPatientFlow(patientId: Int): Flow<List<NcdScreeningEntity>>
 
-    @Query("SELECT * FROM ncd_screenings ORDER BY screeningDate DESC")
+    @Query("SELECT * FROM ncd_screenings ORDER BY effectiveDateTime DESC")
     fun getAllNcdScreeningsFlow(): Flow<List<NcdScreeningEntity>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertNcdScreening(screening: NcdScreeningEntity)
 
     // --- Consult Operations ---
-    @Query("SELECT * FROM consult_logs WHERE patientId = :patientId ORDER BY consultationDate DESC")
+    @Query("SELECT * FROM consult_logs WHERE subjectPatientId = :patientId ORDER BY encounterDate DESC")
     fun getConsultLogsForPatientFlow(patientId: Int): Flow<List<ConsultLogEntity>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
@@ -164,7 +178,7 @@ interface EMRDao {
         NcdScreeningEntity::class,
         ConsultLogEntity::class
     ],
-    version = 1,
+    version = 2,
     exportSchema = false
 )
 abstract class EMRDatabase : RoomDatabase() {
